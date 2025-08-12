@@ -2,7 +2,8 @@ import { useState } from "react";
 import Sidebar from "@/components/layout/sidebar";
 import Header from "@/components/layout/header";
 import AdminDashboard from "@/components/dashboard/admin-dashboard";
-import StoreKeeperDashboard from "@/components/dashboard/store-keeper-dashboard";
+import StoreKeeperDashboard from "../components/dashboard/store-keeper-dashboard";
+import AuthorisingOfficerDashboard from "../components/dashboard/authorising-officer-dashboard";
 import CreateKOTModal from "@/components/modals/create-kot-modal";
 import TestAccountsModal from "@/components/modals/test-accounts-modal";
 import FloatingActionButton from "@/components/floating-action-button";
@@ -44,6 +45,7 @@ export default function Home() {
               </div>
             )}
             {user.role === "store_keeper" && <StoreKeeperDashboard />}
+            {user.role === "authorising_officer" && <AuthorisingOfficerDashboard />}
           </div>
         </main>
       </div>
