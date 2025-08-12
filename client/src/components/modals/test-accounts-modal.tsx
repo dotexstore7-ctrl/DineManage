@@ -138,6 +138,8 @@ export default function TestAccountsModal({ isOpen, onClose }: TestAccountsModal
                   <div className="text-sm text-gray-600 space-y-1 mb-3">
                     <p><strong>Name:</strong> {account.firstName} {account.lastName}</p>
                     <p><strong>Email:</strong> {account.email}</p>
+                    <p><strong>Username:</strong> {account.role === 'admin' ? 'admin' : account.role === 'restaurant_cashier' ? 'cashier' : account.role === 'store_keeper' ? 'storekeeper' : account.role === 'authorising_officer' ? 'officer' : 'barman'}</p>
+                    <p><strong>Password:</strong> {account.role === 'admin' ? 'admin123' : account.role === 'restaurant_cashier' ? 'cashier123' : account.role === 'store_keeper' ? 'store123' : account.role === 'authorising_officer' ? 'officer123' : 'bar123'}</p>
                     <p><strong>Access:</strong> {roleDisplay.access}</p>
                   </div>
                   

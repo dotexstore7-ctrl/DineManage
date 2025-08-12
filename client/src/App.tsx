@@ -7,9 +7,17 @@ import { useAuth } from "@/hooks/useAuth";
 import Home from "@/pages/home";
 import Landing from "@/pages/landing";
 import NotFound from "@/pages/not-found";
+import DemoLogin from "@/components/demo-login";
+import { useState } from "react";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
+  const [showDemoLogin, setShowDemoLogin] = useState(false);
+
+  // Show demo login if enabled
+  if (showDemoLogin) {
+    return <DemoLogin onLogin={() => window.location.reload()} />;
+  }
 
   if (isLoading) {
     return (
@@ -22,7 +30,7 @@ function Router() {
   return (
     <Switch>
       {!isAuthenticated ? (
-        <Route path="/" component={Landing} />
+        <Route path="/" component={() => <Landing onShowDemo={() => setShowDemoLogin(true)} />} />
       ) : (
         <>
           <Route path="/" component={Home} />

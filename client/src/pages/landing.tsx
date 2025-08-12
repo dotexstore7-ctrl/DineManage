@@ -1,7 +1,11 @@
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
-export default function Landing() {
+interface LandingProps {
+  onShowDemo?: () => void;
+}
+
+export default function Landing({ onShowDemo }: LandingProps) {
   const handleLogin = () => {
     window.location.href = "/api/login";
   };
@@ -18,9 +22,14 @@ export default function Landing() {
             <p className="text-gray-600 mb-6">
               Comprehensive restaurant management system with role-based access control
             </p>
-            <Button onClick={handleLogin} className="w-full">
-              Sign In to Continue
-            </Button>
+            <div className="space-y-3">
+              <Button onClick={handleLogin} className="w-full">
+                Sign In with Replit
+              </Button>
+              <Button onClick={onShowDemo} variant="outline" className="w-full">
+                Try Demo with Test Accounts
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>

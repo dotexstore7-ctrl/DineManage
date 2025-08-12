@@ -82,11 +82,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Update the session with the test user
       req.user.claims.sub = testAccountId;
+      req.user.claims.email = testUser.email;
+      req.user.claims.first_name = testUser.firstName;
+      req.user.claims.last_name = testUser.lastName;
       
       res.json({ message: "Switched to test account", user: testUser });
     } catch (error) {
       console.error("Error switching test account:", error);
       res.status(500).json({ message: "Failed to switch test account" });
+    }
+  });
+
+  // Demo login endpoint for testing (bypasses OAuth for demonstration)
+  app.post('/api/auth/demo-login', async (req, res) => {
+    try {
+      const { username, password } = req.body;
+      
+      // Demo credentials for testing
+      const demoCredentials = {
+        'admin': { password: 'admin123', userId: 'admin-test' },
+        'cashier': { password: 'cashier123', userId: 'cashier-test' },
+        'storekeeper': { password: 'store123', userId: 'storekeeper-test' },
+        'officer': { password: 'officer123', userId: 'officer-test' },
+        'barman': { password: 'bar123', userId: 'barman-test' },
+      };
+
+      const credential = demoCredentials[username as keyof typeof demoCredentials];
+      if (!credential || credential.password !== password) {
+        return res.status(401).json({ message: "Invalid credentials" });
+      }
+
+      const testUser = await storage.getUser(credential.userId);
+      if (!testUser) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Create a demo session (for testing only)
+      const demoSession = {
+        claims: {
+          sub: testUser.id,
+          email: testUser.email,
+          first_name: testUser.firstName,
+          last_name: testUser.lastName,
+        },
+        expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
+      };
+
+      // Store in session
+      (req as any).session.demoUser = demoSession;
+      
+      res.json({ message: "Demo login successful", user: testUser });
+    } catch (error) {
+      console.error("Error in demo login:", error);
+      res.status(500).json({ message: "Demo login failed" });
     }
   });
 
