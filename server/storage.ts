@@ -34,48 +34,47 @@ export interface IStorage {
   // User operations (required for Replit Auth)
   getUser(id: string): Promise<User | undefined>;
   upsertUser(user: UpsertUser): Promise<User>;
-
+  
   // Test accounts operations
   createTestAccounts(): Promise<void>;
-
+  
   // Ingredient operations
   getIngredients(): Promise<Ingredient[]>;
   getIngredient(id: string): Promise<Ingredient | undefined>;
   createIngredient(ingredient: InsertIngredient): Promise<Ingredient>;
   updateIngredientStock(id: string, quantity: string): Promise<Ingredient>;
   getLowStockIngredients(): Promise<Ingredient[]>;
-
+  
   // Menu operations
   getMenuItems(category?: string): Promise<(MenuItem & { ingredients: (MenuItemIngredient & { ingredient: Ingredient })[] })[]>;
   getMenuItem(id: string): Promise<(MenuItem & { ingredients: (MenuItemIngredient & { ingredient: Ingredient })[] }) | undefined>;
   createMenuItem(menuItem: InsertMenuItem): Promise<MenuItem>;
   addMenuItemIngredient(menuItemIngredient: InsertMenuItemIngredient): Promise<MenuItemIngredient>;
-
+  
   // KOT operations
   getKots(filters?: { status?: string; type?: string; limit?: number }): Promise<(Kot & { creator: User; items: (KotItem & { menuItem: MenuItem })[] })[]>;
   getKot(id: string): Promise<(Kot & { creator: User; items: (KotItem & { menuItem: MenuItem })[] }) | undefined>;
   createKot(kot: InsertKot, items: InsertKotItem[]): Promise<Kot>;
   updateKotStatus(id: string, status: string, processedById?: string): Promise<Kot>;
   generateKotNumber(type: "restaurant" | "bar"): Promise<string>;
-
+  
   // Stock operations
   getStockAdditions(status?: string): Promise<(StockAddition & { ingredient: Ingredient; addedBy: User; approvedBy?: User })[]>;
   createStockAddition(stockAddition: InsertStockAddition): Promise<StockAddition>;
   approveStockAddition(id: string, approvedById: string): Promise<StockAddition>;
   rejectStockAddition(id: string, approvedById: string, reason: string): Promise<StockAddition>;
-
+  
   // Reversal operations
   getOrderReversals(status?: string): Promise<(OrderReversal & { kot: Kot; requestedBy: User; approvedBy?: User })[]>;
   createOrderReversal(reversal: InsertOrderReversal): Promise<OrderReversal>;
   approveOrderReversal(id: string, approvedById: string): Promise<OrderReversal>;
   rejectOrderReversal(id: string, approvedById: string): Promise<OrderReversal>;
-
+  
   // Bill operations
   getBills(filters?: { kotId?: string; isPaid?: boolean }): Promise<(Bill & { kot: Kot; generatedBy: User })[]>;
   createBill(bill: InsertBill): Promise<Bill>;
-  updateBill(id: string, updates: Partial<InsertBill>): Promise<Bill>;
   generateBillNumber(): Promise<string>;
-
+  
   // Dashboard statistics
   getDashboardStats(): Promise<{
     totalUsers: number;
@@ -170,34 +169,34 @@ export class DatabaseStorage implements IStorage {
 
     for (const menuItem of sampleMenuItems) {
       const [createdItem] = await db.insert(menuItems).values(menuItem).onConflictDoNothing().returning();
-
+      
       // Add ingredients to menu items
       if (createdItem) {
         if (menuItem.name === "Fried Rice") {
           const riceIng = await db.select().from(ingredients).where(eq(ingredients.name, "Rice")).limit(1);
           const carrotIng = await db.select().from(ingredients).where(eq(ingredients.name, "Carrot")).limit(1);
           const onionIng = await db.select().from(ingredients).where(eq(ingredients.name, "Onion")).limit(1);
-
+          
           if (riceIng[0]) await db.insert(menuItemIngredients).values({ menuItemId: createdItem.id, ingredientId: riceIng[0].id, quantity: "0.350" }).onConflictDoNothing();
           if (carrotIng[0]) await db.insert(menuItemIngredients).values({ menuItemId: createdItem.id, ingredientId: carrotIng[0].id, quantity: "0.050" }).onConflictDoNothing();
           if (onionIng[0]) await db.insert(menuItemIngredients).values({ menuItemId: createdItem.id, ingredientId: onionIng[0].id, quantity: "0.030" }).onConflictDoNothing();
         }
-
+        
         if (menuItem.name === "Chicken Curry") {
           const chickenIng = await db.select().from(ingredients).where(eq(ingredients.name, "Chicken")).limit(1);
           const tomatoIng = await db.select().from(ingredients).where(eq(ingredients.name, "Tomato")).limit(1);
           const onionIng = await db.select().from(ingredients).where(eq(ingredients.name, "Onion")).limit(1);
-
+          
           if (chickenIng[0]) await db.insert(menuItemIngredients).values({ menuItemId: createdItem.id, ingredientId: chickenIng[0].id, quantity: "0.200" }).onConflictDoNothing();
           if (tomatoIng[0]) await db.insert(menuItemIngredients).values({ menuItemId: createdItem.id, ingredientId: tomatoIng[0].id, quantity: "0.100" }).onConflictDoNothing();
           if (onionIng[0]) await db.insert(menuItemIngredients).values({ menuItemId: createdItem.id, ingredientId: onionIng[0].id, quantity: "0.050" }).onConflictDoNothing();
         }
-
+        
         if (menuItem.name === "Beer Mug") {
           const beerIng = await db.select().from(ingredients).where(eq(ingredients.name, "Beer")).limit(1);
           if (beerIng[0]) await db.insert(menuItemIngredients).values({ menuItemId: createdItem.id, ingredientId: beerIng[0].id, quantity: "0.500" }).onConflictDoNothing();
         }
-
+        
         if (menuItem.name === "Whiskey Shot") {
           const whiskeyIng = await db.select().from(ingredients).where(eq(ingredients.name, "Whiskey")).limit(1);
           if (whiskeyIng[0]) await db.insert(menuItemIngredients).values({ menuItemId: createdItem.id, ingredientId: whiskeyIng[0].id, quantity: "0.030" }).onConflictDoNothing();
@@ -252,15 +251,15 @@ export class DatabaseStorage implements IStorage {
       .orderBy(menuItems.name);
 
     const results = await query;
-
+    
     const menuMap = new Map<string, MenuItem & { ingredients: (MenuItemIngredient & { ingredient: Ingredient })[] }>();
-
+    
     for (const result of results) {
       const menuItem = result.menu_items;
       if (!menuMap.has(menuItem.id)) {
         menuMap.set(menuItem.id, { ...menuItem, ingredients: [] });
       }
-
+      
       if (result.menu_item_ingredients && result.ingredients) {
         menuMap.get(menuItem.id)!.ingredients.push({
           ...result.menu_item_ingredients,
@@ -268,7 +267,7 @@ export class DatabaseStorage implements IStorage {
         });
       }
     }
-
+    
     return Array.from(menuMap.values());
   }
 
@@ -308,7 +307,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // KOT operations
-  async getKots(filters?: { status?: string; type?: string; limit?: number }): Promise<(Kot & { creator: User; items: (KotItem & { menuItem: MenuItem })[] })[] {
+  async getKots(filters?: { status?: string; type?: string; limit?: number }): Promise<(Kot & { creator: User; items: (KotItem & { menuItem: MenuItem })[] })[]> {
     let query = db
       .select()
       .from(kots)
@@ -331,9 +330,9 @@ export class DatabaseStorage implements IStorage {
     }
 
     const results = await query;
-
+    
     const kotMap = new Map<string, Kot & { creator: User; items: (KotItem & { menuItem: MenuItem })[] }>();
-
+    
     for (const result of results) {
       const kot = result.kots;
       if (!kotMap.has(kot.id)) {
@@ -343,7 +342,7 @@ export class DatabaseStorage implements IStorage {
           items: [] 
         });
       }
-
+      
       if (result.kot_items && result.menu_items) {
         kotMap.get(kot.id)!.items.push({
           ...result.kot_items,
@@ -351,7 +350,7 @@ export class DatabaseStorage implements IStorage {
         });
       }
     }
-
+    
     return Array.from(kotMap.values());
   }
 
@@ -387,7 +386,7 @@ export class DatabaseStorage implements IStorage {
 
   async createKot(kot: InsertKot, items: InsertKotItem[]): Promise<Kot> {
     const kotNumber = await this.generateKotNumber(kot.type);
-
+    
     const [newKot] = await db.insert(kots).values({
       ...kot,
       kotNumber
@@ -447,7 +446,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     const results = await query.orderBy(desc(stockAdditions.createdAt));
-
+    
     return results.map(result => ({
       ...result.stock_additions,
       ingredient: result.ingredients!,
@@ -512,7 +511,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     const results = await query.orderBy(desc(orderReversals.createdAt));
-
+    
     return results.map(result => ({
       ...result.order_reversals,
       kot: result.kots!,
@@ -572,7 +571,7 @@ export class DatabaseStorage implements IStorage {
     }
 
     const results = await query.orderBy(desc(bills.createdAt));
-
+    
     return results.map(result => ({
       ...result.bills,
       kot: result.kots!,
@@ -582,18 +581,12 @@ export class DatabaseStorage implements IStorage {
 
   async createBill(bill: InsertBill): Promise<Bill> {
     const billNumber = await this.generateBillNumber();
-    const [createdBill] = await db.insert(bills)
-      .values({ ...bill, billNumber })
-      .returning();
-    return createdBill;
-  }
-
-  async updateBill(id: string, updates: Partial<InsertBill>): Promise<Bill> {
-    const [updatedBill] = await db.update(bills)
-      .set(updates)
-      .where(eq(bills.id, id))
-      .returning();
-    return updatedBill;
+    
+    const [newBill] = await db.insert(bills).values({
+      ...bill,
+      billNumber
+    }).returning();
+    return newBill;
   }
 
   async generateBillNumber(): Promise<string> {
@@ -625,7 +618,7 @@ export class DatabaseStorage implements IStorage {
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     const [totalUsers] = await db.select({ count: sql<number>`count(*)` }).from(users);
-
+    
     const [todayOrders] = await db
       .select({ count: sql<number>`count(*)` })
       .from(kots)

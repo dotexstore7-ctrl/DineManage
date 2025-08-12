@@ -17,7 +17,6 @@ interface CreateKOTModalProps {
   isOpen: boolean;
   onClose: () => void;
   userRole: string;
-  onSuccess?: () => void;
 }
 
 const kotSchema = z.object({
@@ -35,7 +34,7 @@ const kotSchema = z.object({
 
 type KOTFormData = z.infer<typeof kotSchema>;
 
-export default function CreateKOTModal({ isOpen, onClose, userRole, onSuccess }: CreateKOTModalProps) {
+export default function CreateKOTModal({ isOpen, onClose, userRole }: CreateKOTModalProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [selectedItems, setSelectedItems] = useState<Set<string>>(new Set());
@@ -77,7 +76,6 @@ export default function CreateKOTModal({ isOpen, onClose, userRole, onSuccess }:
         description: "K.O.T created successfully",
       });
       queryClient.invalidateQueries({ queryKey: ["/api/kots"] });
-      onSuccess?.();
       onClose();
       form.reset();
       setSelectedItems(new Set());
