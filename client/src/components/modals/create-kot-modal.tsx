@@ -54,7 +54,8 @@ export default function CreateKOTModal({ isOpen, onClose, userRole }: CreateKOTM
   });
 
   const { data: menuItems } = useQuery({
-    queryKey: ["/api/menu-items", { category: kotType }],
+    queryKey: ["/api/menu-items", kotType],
+    queryFn: () => apiRequest("GET", `/api/menu-items?category=${kotType}`),
   });
 
   const createKOTMutation = useMutation({
@@ -252,7 +253,7 @@ export default function CreateKOTModal({ isOpen, onClose, userRole }: CreateKOTM
                         />
                       )}
                       <span className="text-sm font-medium text-gray-900">
-                        ₹{parseFloat(item.price).toLocaleString()}
+                        Rs. {parseFloat(item.price).toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                       </span>
                     </div>
                   </div>
@@ -266,7 +267,7 @@ export default function CreateKOTModal({ isOpen, onClose, userRole }: CreateKOTM
             <div className="border-t border-gray-200 pt-4">
               <div className="flex justify-between text-lg font-semibold">
                 <span>Total Amount:</span>
-                <span>₹{totalAmount.toLocaleString()}</span>
+                <span>Rs. {totalAmount.toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
               </div>
             </div>
 
