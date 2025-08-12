@@ -53,6 +53,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Test accounts endpoint
+  app.get('/api/test-accounts', isAuthenticated, async (req, res) => {
+    try {
+      const testAccounts = [
+        { id: "admin-test", email: "admin@restaurant.com", firstName: "John", lastName: "Admin", role: "admin" },
+        { id: "cashier-test", email: "cashier@restaurant.com", firstName: "Jane", lastName: "Cashier", role: "restaurant_cashier" },
+        { id: "storekeeper-test", email: "storekeeper@restaurant.com", firstName: "Bob", lastName: "Store", role: "store_keeper" },
+        { id: "officer-test", email: "officer@restaurant.com", firstName: "Alice", lastName: "Officer", role: "authorising_officer" },
+        { id: "barman-test", email: "barman@restaurant.com", firstName: "Mike", lastName: "Bar", role: "barman" },
+      ];
+      res.json(testAccounts);
+    } catch (error) {
+      console.error("Error fetching test accounts:", error);
+      res.status(500).json({ message: "Failed to fetch test accounts" });
+    }
+  });
+
+  // Switch test account endpoint
+  app.post('/api/auth/switch-test-account', isAuthenticated, async (req: any, res) => {
+    try {
+      const { testAccountId } = req.body;
+      const testUser = await storage.getUser(testAccountId);
+      
+      if (!testUser) {
+        return res.status(404).json({ message: "Test account not found" });
+      }
+
+      // Update the session with the test user
+      req.user.claims.sub = testAccountId;
+      
+      res.json({ message: "Switched to test account", user: testUser });
+    } catch (error) {
+      console.error("Error switching test account:", error);
+      res.status(500).json({ message: "Failed to switch test account" });
+    }
+  });
+
   // Dashboard stats
   app.get('/api/dashboard/stats', isAuthenticated, async (req, res) => {
     try {

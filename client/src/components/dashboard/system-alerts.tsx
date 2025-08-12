@@ -12,8 +12,8 @@ export default function SystemAlerts() {
   const alerts = [];
 
   // Add low stock alerts
-  if (lowStockIngredients?.length > 0) {
-    lowStockIngredients.forEach((ingredient: any) => {
+  if ((lowStockIngredients as any)?.length > 0) {
+    (lowStockIngredients as any).forEach((ingredient: any) => {
       alerts.push({
         type: "warning",
         icon: "fas fa-exclamation-triangle",
@@ -28,12 +28,12 @@ export default function SystemAlerts() {
   }
 
   // Add pending approvals alert
-  if (pendingStockAdditions?.length > 0) {
+  if ((pendingStockAdditions as any)?.length > 0) {
     alerts.push({
       type: "info",
       icon: "fas fa-clock",
       title: "Pending Approval",
-      message: `${pendingStockAdditions.length} stock additions awaiting approval`,
+      message: `${(pendingStockAdditions as any).length} stock additions awaiting approval`,
       bgColor: "bg-yellow-50",
       iconColor: "text-yellow-500",
       textColor: "text-yellow-800",

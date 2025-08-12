@@ -26,28 +26,28 @@ export default function StatsCards() {
   const statCards = [
     {
       title: "Total Users",
-      value: stats?.totalUsers || 0,
+      value: (stats as any)?.totalUsers || 0,
       icon: "fas fa-users",
       bgColor: "bg-blue-100",
       iconColor: "text-blue-600",
     },
     {
       title: "Today's Orders",
-      value: stats?.todayOrders || 0,
+      value: (stats as any)?.todayOrders || 0,
       icon: "fas fa-receipt",
       bgColor: "bg-green-100",
       iconColor: "text-green-600",
     },
     {
       title: "Stock Items",
-      value: stats?.stockItems || 0,
+      value: (stats as any)?.stockItems || 0,
       icon: "fas fa-boxes",
       bgColor: "bg-yellow-100",
       iconColor: "text-yellow-600",
     },
     {
       title: "Today's Revenue",
-      value: `₹${parseFloat(stats?.todayRevenue || "0").toLocaleString()}`,
+      value: `₹${parseFloat((stats as any)?.todayRevenue || "0").toLocaleString()}`,
       icon: "fas fa-dollar-sign",
       bgColor: "bg-purple-100",
       iconColor: "text-purple-600",

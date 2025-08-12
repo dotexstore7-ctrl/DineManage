@@ -9,7 +9,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export default function Home() {
   const { user } = useAuth();
-  const [selectedRole, setSelectedRole] = useState(user?.role || "admin");
+  const [selectedRole, setSelectedRole] = useState((user as any)?.role || "admin");
   const [activeMenuItem, setActiveMenuItem] = useState("dashboard");
   const [isKOTModalOpen, setIsKOTModalOpen] = useState(false);
   const [isTestAccountsModalOpen, setIsTestAccountsModalOpen] = useState(false);
@@ -23,7 +23,7 @@ export default function Home() {
         onRoleChange={setSelectedRole}
         activeMenuItem={activeMenuItem}
         onMenuItemChange={setActiveMenuItem}
-        user={user}
+        user={user as any}
       />
       
       <div className="flex flex-col flex-1 overflow-hidden">

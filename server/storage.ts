@@ -126,10 +126,82 @@ export class DatabaseStorage implements IStorage {
       { name: "Carrot", unit: "kg", currentStock: "8.000", minimumThreshold: "5.000", costPerUnit: "80.00" },
       { name: "Onion", unit: "kg", currentStock: "25.000", minimumThreshold: "10.000", costPerUnit: "40.00" },
       { name: "Whiskey", unit: "l", currentStock: "10.000", minimumThreshold: "5.000", costPerUnit: "2500.00" },
+      { name: "Beer", unit: "l", currentStock: "30.000", minimumThreshold: "15.000", costPerUnit: "150.00" },
+      { name: "Tomato", unit: "kg", currentStock: "12.000", minimumThreshold: "8.000", costPerUnit: "70.00" },
+      { name: "Oil", unit: "l", currentStock: "5.000", minimumThreshold: "3.000", costPerUnit: "120.00" },
     ];
 
     for (const ingredient of testIngredients) {
       await db.insert(ingredients).values(ingredient).onConflictDoNothing();
+    }
+
+    // Create sample menu items
+    const sampleMenuItems = [
+      {
+        name: "Fried Rice",
+        description: "Delicious vegetable fried rice",
+        price: "150.00",
+        category: "restaurant",
+        isActive: true,
+      },
+      {
+        name: "Chicken Curry",
+        description: "Spicy chicken curry with rice",
+        price: "250.00",
+        category: "restaurant",
+        isActive: true,
+      },
+      {
+        name: "Beer Mug",
+        description: "Fresh cold beer",
+        price: "200.00",
+        category: "bar",
+        isActive: true,
+      },
+      {
+        name: "Whiskey Shot",
+        description: "Premium whiskey shot",
+        price: "350.00",
+        category: "bar",
+        isActive: true,
+      },
+    ];
+
+    for (const menuItem of sampleMenuItems) {
+      const [createdItem] = await db.insert(menuItems).values(menuItem).onConflictDoNothing().returning();
+      
+      // Add ingredients to menu items
+      if (createdItem) {
+        if (menuItem.name === "Fried Rice") {
+          const riceIng = await db.select().from(ingredients).where(eq(ingredients.name, "Rice")).limit(1);
+          const carrotIng = await db.select().from(ingredients).where(eq(ingredients.name, "Carrot")).limit(1);
+          const onionIng = await db.select().from(ingredients).where(eq(ingredients.name, "Onion")).limit(1);
+          
+          if (riceIng[0]) await db.insert(menuItemIngredients).values({ menuItemId: createdItem.id, ingredientId: riceIng[0].id, quantity: "0.350" }).onConflictDoNothing();
+          if (carrotIng[0]) await db.insert(menuItemIngredients).values({ menuItemId: createdItem.id, ingredientId: carrotIng[0].id, quantity: "0.050" }).onConflictDoNothing();
+          if (onionIng[0]) await db.insert(menuItemIngredients).values({ menuItemId: createdItem.id, ingredientId: onionIng[0].id, quantity: "0.030" }).onConflictDoNothing();
+        }
+        
+        if (menuItem.name === "Chicken Curry") {
+          const chickenIng = await db.select().from(ingredients).where(eq(ingredients.name, "Chicken")).limit(1);
+          const tomatoIng = await db.select().from(ingredients).where(eq(ingredients.name, "Tomato")).limit(1);
+          const onionIng = await db.select().from(ingredients).where(eq(ingredients.name, "Onion")).limit(1);
+          
+          if (chickenIng[0]) await db.insert(menuItemIngredients).values({ menuItemId: createdItem.id, ingredientId: chickenIng[0].id, quantity: "0.200" }).onConflictDoNothing();
+          if (tomatoIng[0]) await db.insert(menuItemIngredients).values({ menuItemId: createdItem.id, ingredientId: tomatoIng[0].id, quantity: "0.100" }).onConflictDoNothing();
+          if (onionIng[0]) await db.insert(menuItemIngredients).values({ menuItemId: createdItem.id, ingredientId: onionIng[0].id, quantity: "0.050" }).onConflictDoNothing();
+        }
+        
+        if (menuItem.name === "Beer Mug") {
+          const beerIng = await db.select().from(ingredients).where(eq(ingredients.name, "Beer")).limit(1);
+          if (beerIng[0]) await db.insert(menuItemIngredients).values({ menuItemId: createdItem.id, ingredientId: beerIng[0].id, quantity: "0.500" }).onConflictDoNothing();
+        }
+        
+        if (menuItem.name === "Whiskey Shot") {
+          const whiskeyIng = await db.select().from(ingredients).where(eq(ingredients.name, "Whiskey")).limit(1);
+          if (whiskeyIng[0]) await db.insert(menuItemIngredients).values({ menuItemId: createdItem.id, ingredientId: whiskeyIng[0].id, quantity: "0.030" }).onConflictDoNothing();
+        }
+      }
     }
   }
 
@@ -175,7 +247,7 @@ export class DatabaseStorage implements IStorage {
       .from(menuItems)
       .leftJoin(menuItemIngredients, eq(menuItems.id, menuItemIngredients.menuItemId))
       .leftJoin(ingredients, eq(menuItemIngredients.ingredientId, ingredients.id))
-      .where(category ? eq(menuItems.category, category) : undefined)
+      .where(category ? eq(menuItems.category, category) : sql`1=1`)
       .orderBy(menuItems.name);
 
     const results = await query;
@@ -248,13 +320,13 @@ export class DatabaseStorage implements IStorage {
     if (filters?.type) conditions.push(eq(kots.type, filters.type as any));
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      query = query.where(and(...conditions)) as any;
     }
 
-    query = query.orderBy(desc(kots.createdAt));
+    query = query.orderBy(desc(kots.createdAt)) as any;
 
     if (filters?.limit) {
-      query = query.limit(filters.limit);
+      query = query.limit(filters.limit) as any;
     }
 
     const results = await query;
@@ -370,7 +442,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(stockAdditions.addedById, users.id));
 
     if (status) {
-      query = query.where(eq(stockAdditions.status, status as any));
+      query = query.where(eq(stockAdditions.status, status as any)) as any;
     }
 
     const results = await query.orderBy(desc(stockAdditions.createdAt));
@@ -435,7 +507,7 @@ export class DatabaseStorage implements IStorage {
       .leftJoin(users, eq(orderReversals.requestedById, users.id));
 
     if (status) {
-      query = query.where(eq(orderReversals.status, status as any));
+      query = query.where(eq(orderReversals.status, status as any)) as any;
     }
 
     const results = await query.orderBy(desc(orderReversals.createdAt));
@@ -495,7 +567,7 @@ export class DatabaseStorage implements IStorage {
     if (filters?.isPaid !== undefined) conditions.push(eq(bills.isPaid, filters.isPaid));
 
     if (conditions.length > 0) {
-      query = query.where(and(...conditions));
+      query = query.where(and(...conditions)) as any;
     }
 
     const results = await query.orderBy(desc(bills.createdAt));

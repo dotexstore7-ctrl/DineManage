@@ -121,7 +121,7 @@ export default function CreateKOTModal({ isOpen, onClose, userRole }: CreateKOTM
 
   const onSubmit = (data: KOTFormData) => {
     const items = Array.from(selectedItems).map(itemId => {
-      const menuItem = menuItems?.find((item: any) => item.id === itemId);
+      const menuItem = (menuItems as any)?.find((item: any) => item.id === itemId);
       const quantity = itemQuantities[itemId] || 1;
       const unitPrice = parseFloat(menuItem?.price || "0");
       return {
@@ -136,7 +136,7 @@ export default function CreateKOTModal({ isOpen, onClose, userRole }: CreateKOTM
   };
 
   const totalAmount = Array.from(selectedItems).reduce((sum, itemId) => {
-    const menuItem = menuItems?.find((item: any) => item.id === itemId);
+    const menuItem = (menuItems as any)?.find((item: any) => item.id === itemId);
     const quantity = itemQuantities[itemId] || 1;
     const unitPrice = parseFloat(menuItem?.price || "0");
     return sum + (unitPrice * quantity);
@@ -223,7 +223,7 @@ export default function CreateKOTModal({ isOpen, onClose, userRole }: CreateKOTM
             <div>
               <FormLabel>Menu Items</FormLabel>
               <div className="border border-gray-300 rounded-md p-4 max-h-64 overflow-y-auto mt-2">
-                {menuItems?.map((item: any) => (
+                {(menuItems as any)?.map((item: any) => (
                   <div key={item.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0">
                     <div className="flex items-center space-x-3">
                       <Checkbox
