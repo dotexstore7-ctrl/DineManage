@@ -385,6 +385,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Cashier specific K.O.T routes
+  app.get('/api/kots/my-orders', isAuthenticated, hasRole(['restaurant_cashier', 'barman']), async (req: any, res) => {
+    try {
+      const kots = await storage.getKOTs({ createdById: req.user.claims.sub });
+      res.json(kots);
+    } catch (error) {
+      console.error("Error fetching my orders:", error);
+      res.status(500).json({ message: "Failed to fetch orders" });
+    }
+  });
+
   // Bill routes
   app.get('/api/bills', isAuthenticated, async (req, res) => {
     try {
@@ -398,6 +409,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error fetching bills:", error);
       res.status(500).json({ message: "Failed to fetch bills" });
+    }
+  });
+
+  app.patch('/api/bills/:id/pay', isAuthenticated, hasRole(['restaurant_cashier', 'barman']), async (req, res) => {
+    try {
+      const { id } = req.params;
+      const result = await storage.updateBill(id, { isPaid: true });
+      res.json(result);
+    } catch (error) {
+      console.error("Error marking bill as paid:", error);
+      res.status(500).json({ message: "Failed to mark bill as paid" });
     }
   });
 
