@@ -16,13 +16,16 @@ import {
 // Role-based permission middleware
 const hasRole = (allowedRoles: string[]) => {
   return (req: any, res: any, next: any) => {
-    if (!req.user?.claims?.sub) {
+    const demoUser = (req as any).session?.demoUser;
+    const userId = demoUser ? demoUser.claims.sub : req.user?.claims?.sub;
+    
+    if (!userId) {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
     // For development, we'll check user role from database
     // In production, this would be in the JWT token
-    storage.getUser(req.user.claims.sub).then(user => {
+    storage.getUser(userId).then(user => {
       if (!user || !allowedRoles.includes(user.role)) {
         return res.status(403).json({ message: "Insufficient permissions" });
       }
@@ -44,7 +47,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const demoUser = (req as any).session?.demoUser;
+      let userId;
+      
+      if (demoUser) {
+        userId = demoUser.claims.sub;
+      } else {
+        userId = req.user.claims.sub;
+      }
+      
       const user = await storage.getUser(userId);
       res.json(user);
     } catch (error) {
@@ -135,6 +146,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error("Error in demo login:", error);
       res.status(500).json({ message: "Demo login failed" });
+    }
+  });
+
+  // Demo logout endpoint
+  app.post('/api/auth/demo-logout', async (req, res) => {
+    try {
+      (req as any).session.demoUser = null;
+      res.json({ message: "Demo logout successful" });
+    } catch (error) {
+      console.error("Error in demo logout:", error);
+      res.status(500).json({ message: "Demo logout failed" });
     }
   });
 
