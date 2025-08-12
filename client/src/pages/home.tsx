@@ -4,6 +4,7 @@ import Header from "@/components/layout/header";
 import AdminDashboard from "@/components/dashboard/admin-dashboard";
 import StoreKeeperDashboard from "../components/dashboard/store-keeper-dashboard";
 import AuthorisingOfficerDashboard from "../components/dashboard/authorising-officer-dashboard";
+import BarmanDashboard from "../components/dashboard/barman-dashboard";
 import CreateKOTModal from "@/components/modals/create-kot-modal";
 import TestAccountsModal from "@/components/modals/test-accounts-modal";
 import FloatingActionButton from "@/components/floating-action-button";
@@ -46,6 +47,7 @@ export default function Home() {
             )}
             {user.role === "store_keeper" && <StoreKeeperDashboard />}
             {user.role === "authorising_officer" && <AuthorisingOfficerDashboard />}
+            {user.role === "barman" && <BarmanDashboard />}
           </div>
         </main>
       </div>
