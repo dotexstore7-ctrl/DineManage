@@ -2,6 +2,10 @@ import React, { useState } from "react";
 import StatsCards from "./stats-cards";
 import RecentOrders from "./recent-orders";
 import SystemAlerts from "./system-alerts";
+import { CreateUserModal } from "../modals/create-user-modal";
+import { CreateMenuItemModal } from "../modals/create-menu-item-modal";
+import { ManageStockModal } from "../modals/manage-stock-modal";
+import { ViewReportsModal } from "../modals/view-reports-modal";
 
 export default function AdminDashboard() {
   const [activeModal, setActiveModal] = useState<string | null>(null);

@@ -71,7 +71,7 @@ export function ViewReportsModal({ onClose }: ViewReportsModalProps) {
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h4 className="font-semibold text-blue-800">Today's Revenue</h4>
                   <p className="text-2xl font-bold text-blue-600">
-                    Rs {parseFloat((dashboardStats as any)?.todayRevenue || "0").toLocaleString()}
+                    Rs. {parseFloat((dashboardStats as any)?.todayRevenue || "0").toLocaleString('en-LK', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                   </p>
                 </div>
                 <div className="bg-green-50 p-4 rounded-lg">

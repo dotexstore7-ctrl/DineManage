@@ -101,7 +101,7 @@ export function CreateMenuItemModal({ onClose }: CreateMenuItemModalProps) {
             
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Price (Rs)
+                Price (Rs.)
               </label>
               <Input
                 type="number"
