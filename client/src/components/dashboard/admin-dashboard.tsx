@@ -1,11 +1,14 @@
+import React, { useState } from "react";
 import StatsCards from "./stats-cards";
 import RecentOrders from "./recent-orders";
 import SystemAlerts from "./system-alerts";
 
 export default function AdminDashboard() {
+  const [activeModal, setActiveModal] = useState<string | null>(null);
+
   const handleQuickAction = (action: string) => {
-    // TODO: Implement quick actions
     console.log(`Quick action: ${action}`);
+    setActiveModal(action);
   };
 
   return (
@@ -55,6 +58,20 @@ export default function AdminDashboard() {
           <p className="text-sm font-medium text-gray-900">Manage Stock</p>
         </button>
       </div>
+      
+      {/* Modals */}
+      {activeModal === 'createUser' && (
+        <CreateUserModal onClose={() => setActiveModal(null)} />
+      )}
+      {activeModal === 'addMenuItem' && (
+        <CreateMenuItemModal onClose={() => setActiveModal(null)} />
+      )}
+      {activeModal === 'manageStock' && (
+        <ManageStockModal onClose={() => setActiveModal(null)} />
+      )}
+      {activeModal === 'viewReports' && (
+        <ViewReportsModal onClose={() => setActiveModal(null)} />
+      )}
     </div>
   );
 }

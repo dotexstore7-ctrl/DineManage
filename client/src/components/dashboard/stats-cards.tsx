@@ -47,7 +47,7 @@ export default function StatsCards() {
     },
     {
       title: "Today's Revenue",
-      value: `₹${parseFloat((stats as any)?.todayRevenue || "0").toLocaleString()}`,
+      value: `Rs ${parseFloat((stats as any)?.todayRevenue || "0").toLocaleString()}`,
       icon: "fas fa-dollar-sign",
       bgColor: "bg-purple-100",
       iconColor: "text-purple-600",

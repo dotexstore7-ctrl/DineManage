@@ -91,11 +91,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Test account not found" });
       }
 
-      // Update the session with the test user
-      req.user.claims.sub = testAccountId;
-      req.user.claims.email = testUser.email;
-      req.user.claims.first_name = testUser.firstName;
-      req.user.claims.last_name = testUser.lastName;
+      // Update the demo session with the test user
+      const demoSession = {
+        claims: {
+          sub: testUser.id,
+          email: testUser.email,
+          first_name: testUser.firstName,
+          last_name: testUser.lastName,
+        },
+        expires_at: Math.floor(Date.now() / 1000) + 3600, // 1 hour from now
+      };
+      
+      (req as any).session.demoUser = demoSession;
       
       res.json({ message: "Switched to test account", user: testUser });
     } catch (error) {
