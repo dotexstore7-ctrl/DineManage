@@ -1,0 +1,6 @@
+[submodule "RestaurantPro"]
+	path = RestaurantPro
+	url = https://github.com/dotexstore7-ctrl/RestaurantPro.git
+[submodule "vendor/repo-name"]
+	path = vendor/repo-name
+	url = https://github.com/dotexstore7-ctrl/DineManage.git

@@ -1,0 +1,633 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RestaurantPro - Management System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#E3F2FD',
+                            100: '#BBDEFB',
+                            500: '#1976D2',
+                            600: '#1565C0',
+                            700: '#0D47A1'
+                        },
+                        secondary: {
+                            50: '#FFF3E0',
+                            100: '#FFE0B2',
+                            500: '#FF6F00',
+                            600: '#F57C00',
+                            700: '#E65100'
+                        }
+                    }
+                }
+            }
+        };
+    </script>
+</head>
+<body class="bg-gray-50 font-inter">
+    <!-- @COMPONENT: MainLayout [contains sidebar, header, and main content area] -->
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar -->
+        <!-- @COMPONENT: Sidebar [role-based navigation menu] -->
+        <div class="hidden lg:flex lg:flex-shrink-0">
+            <div class="flex flex-col w-64 bg-white border-r border-gray-200">
+                <!-- Logo -->
+                <div class="flex items-center justify-center h-16 px-4 bg-primary-500">
+                    <h1 class="text-xl font-bold text-white">RestaurantPro</h1>
+                </div>
+                
+                <!-- Role Selector -->
+                <!-- @STATE: selectedRole:string = 'admin' -->
+                <div class="px-4 py-3 border-b border-gray-200">
+                    <label class="block text-xs font-medium text-gray-500 mb-1">Current Role</label>
+                    <select id="roleSelector" class="w-full p-2 border border-gray-300 rounded-md text-sm" data-event="change:switchRole">
+                        <option value="admin">Admin</option>
+                        <option value="restaurant_cashier">Restaurant Cashier</option>
+                        <option value="store_keeper">Store Keeper</option>
+                        <option value="authorising_officer">Authorising Officer</option>
+                        <option value="barman">Barman</option>
+                    </select>
+                </div>
+
+                <!-- Navigation Menu -->
+                <!-- @STATE: activeMenuItem:string = 'dashboard' -->
+                <nav class="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+                    <!-- Admin Navigation -->
+                    <div id="adminNav" class="role-nav">
+                        <a href="#" class="flex items-center px-3 py-2 text-sm font-medium bg-primary-50 text-primary-700 rounded-md" data-nav="dashboard">
+                            <i class="fas fa-tachometer-alt mr-3"></i>Dashboard
+                        </a>
+                        <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md" data-nav="users">
+                            <i class="fas fa-users mr-3"></i>User Management
+                        </a>
+                        <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md" data-nav="menus">
+                            <i class="fas fa-utensils mr-3"></i>Menu Management
+                        </a>
+                        <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md" data-nav="ingredients">
+                            <i class="fas fa-list mr-3"></i>Ingredients & Scales
+                        </a>
+                        <a href="#" class="flex items-center px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-md" data-nav="reports">
+                            <i class="fas fa-chart-bar mr-3"></i>System Reports
+                        </a>
+                    </div>
+                </nav>
+
+                <!-- User Profile -->
+                <div class="px-4 py-3 border-t border-gray-200">
+                    <div class="flex items-center">
+                        <div class="flex-shrink-0">
+                            <!-- Profile image placeholder -->
+                            <div class="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                                <i class="fas fa-user text-primary-600"></i>
+                            </div>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-gray-700" data-bind="user.name" data-mock="true">John Admin</p>
+                            <p class="text-xs text-gray-500" data-bind="user.role" data-mock="true">Administrator</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- @END_COMPONENT: Sidebar -->
+
+        <!-- Main Content Area -->
+        <div class="flex flex-col flex-1 overflow-hidden">
+            <!-- Header -->
+            <!-- @COMPONENT: Header [top navigation with mobile menu toggle] -->
+            <header class="bg-white border-b border-gray-200 px-6 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center">
+                        <!-- Mobile menu button -->
+                        <button class="lg:hidden p-2 text-gray-500 hover:text-gray-700" data-event="click:toggleMobileMenu">
+                            <i class="fas fa-bars"></i>
+                        </button>
+                        <h2 class="ml-4 text-2xl font-semibold text-gray-900">Dashboard</h2>
+                    </div>
+                    
+                    <!-- Header Actions -->
+                    <div class="flex items-center space-x-4">
+                        <!-- Notifications -->
+                        <button class="relative p-2 text-gray-500 hover:text-gray-700" data-event="click:showNotifications">
+                            <i class="fas fa-bell"></i>
+                            <span class="absolute top-0 right-0 w-3 h-3 bg-red-500 rounded-full"></span>
+                        </button>
+                        
+                        <!-- Quick Actions Dropdown -->
+                        <div class="relative">
+                            <button class="px-4 py-2 text-sm font-medium text-white bg-primary-500 rounded-md hover:bg-primary-600" data-event="click:showQuickActions">
+                                Quick Actions
+                                <i class="fas fa-chevron-down ml-2"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <!-- @END_COMPONENT: Header -->
+
+            <!-- Main Dashboard Content -->
+            <!-- @COMPONENT: DashboardContent [main content area with role-specific views] -->
+            <main class="flex-1 overflow-y-auto bg-gray-50">
+                <div class="px-6 py-8">
+                    
+                    <!-- Admin Dashboard View -->
+                    <div id="adminDashboard" class="role-content">
+                        <!-- Stats Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-users text-blue-600 text-xl"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-500">Total Users</p>
+                                        <p class="text-2xl font-semibold text-gray-900" data-bind="stats.totalUsers" data-mock="true">28</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-receipt text-green-600 text-xl"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-500">Today's Orders</p>
+                                        <p class="text-2xl font-semibold text-gray-900" data-bind="stats.todayOrders" data-mock="true">147</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-boxes text-yellow-600 text-xl"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-500">Stock Items</p>
+                                        <p class="text-2xl font-semibold text-gray-900" data-bind="stats.stockItems" data-mock="true">342</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                            <i class="fas fa-dollar-sign text-purple-600 text-xl"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <p class="text-sm font-medium text-gray-500">Today's Revenue</p>
+                                        <p class="text-2xl font-semibold text-gray-900" data-bind="stats.todayRevenue" data-mock="true">₹12,450</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Main Content Grid -->
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Recent Orders -->
+                            <div class="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200">
+                                <div class="px-6 py-4 border-b border-gray-200">
+                                    <h3 class="text-lg font-semibold text-gray-900">Recent K.O.Ts</h3>
+                                </div>
+                                <div class="overflow-x-auto">
+                                    <table class="w-full">
+                                        <thead class="bg-gray-50">
+                                            <tr>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">K.O.T #</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Amount</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody class="bg-white divide-y divide-gray-200">
+                                            <!-- @MAP: recentOrders.map(order => ( -->
+                                            <tr data-mock="true">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" data-bind="order.kotNumber">REST-001</td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="order.customerName">John Smith</td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-bind="order.type">Restaurant</td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="px-2 py-1 text-xs font-medium bg-green-100 text-green-800 rounded-full" data-bind="order.status">Completed</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="order.amount">₹450</td>
+                                            </tr>
+                                            <tr data-mock="true">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" data-bind="order.kotNumber">BAR-034</td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="order.customerName">Sarah Johnson</td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-bind="order.type">Bar</td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="px-2 py-1 text-xs font-medium bg-yellow-100 text-yellow-800 rounded-full" data-bind="order.status">Pending</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="order.amount">₹320</td>
+                                            </tr>
+                                            <tr data-mock="true">
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900" data-bind="order.kotNumber">REST-002</td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="order.customerName">Mike Wilson</td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500" data-bind="order.type">Restaurant</td>
+                                                <td class="px-6 py-4 whitespace-nowrap">
+                                                    <span class="px-2 py-1 text-xs font-medium bg-blue-100 text-blue-800 rounded-full" data-bind="order.status">Processing</span>
+                                                </td>
+                                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900" data-bind="order.amount">₹670</td>
+                                            </tr>
+                                            <!-- @END_MAP )) -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- System Alerts & Notifications -->
+                            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+                                <div class="px-6 py-4 border-b border-gray-200">
+                                    <h3 class="text-lg font-semibold text-gray-900">System Alerts</h3>
+                                </div>
+                                <div class="p-6 space-y-4">
+                                    <!-- @MAP: systemAlerts.map(alert => ( -->
+                                    <div class="flex items-start space-x-3 p-3 bg-red-50 rounded-lg" data-mock="true">
+                                        <i class="fas fa-exclamation-triangle text-red-500 mt-0.5"></i>
+                                        <div>
+                                            <p class="text-sm font-medium text-red-800" data-bind="alert.title">Low Stock Alert</p>
+                                            <p class="text-xs text-red-600 mt-1" data-bind="alert.message">Chicken stock is below 20kg threshold</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start space-x-3 p-3 bg-yellow-50 rounded-lg" data-mock="true">
+                                        <i class="fas fa-clock text-yellow-500 mt-0.5"></i>
+                                        <div>
+                                            <p class="text-sm font-medium text-yellow-800" data-bind="alert.title">Pending Approval</p>
+                                            <p class="text-xs text-yellow-600 mt-1" data-bind="alert.message">5 stock additions awaiting approval</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="flex items-start space-x-3 p-3 bg-blue-50 rounded-lg" data-mock="true">
+                                        <i class="fas fa-info-circle text-blue-500 mt-0.5"></i>
+                                        <div>
+                                            <p class="text-sm font-medium text-blue-800" data-bind="alert.title">System Update</p>
+                                            <p class="text-xs text-blue-600 mt-1" data-bind="alert.message">New menu items added to system</p>
+                                        </div>
+                                    </div>
+                                    <!-- @END_MAP )) -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions Panel -->
+                        <div class="mt-8 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <button class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow text-center" data-event="click:createUser">
+                                <i class="fas fa-user-plus text-blue-500 text-2xl mb-2"></i>
+                                <p class="text-sm font-medium text-gray-900">Create User</p>
+                            </button>
+                            
+                            <button class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow text-center" data-event="click:addMenuItem">
+                                <i class="fas fa-plus-circle text-green-500 text-2xl mb-2"></i>
+                                <p class="text-sm font-medium text-gray-900">Add Menu Item</p>
+                            </button>
+                            
+                            <button class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow text-center" data-event="click:viewReports">
+                                <i class="fas fa-chart-line text-purple-500 text-2xl mb-2"></i>
+                                <p class="text-sm font-medium text-gray-900">View Reports</p>
+                            </button>
+                            
+                            <button class="p-4 bg-white rounded-lg shadow-sm border border-gray-200 hover:shadow-md transition-shadow text-center" data-event="click:manageStock">
+                                <i class="fas fa-warehouse text-orange-500 text-2xl mb-2"></i>
+                                <p class="text-sm font-medium text-gray-900">Manage Stock</p>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </main>
+            <!-- @END_COMPONENT: DashboardContent -->
+        </div>
+    </div>
+    <!-- @END_COMPONENT: MainLayout -->
+
+    <!-- Create K.O.T Modal -->
+    <!-- @COMPONENT: CreateKOTModal [modal for creating new kitchen order tickets] -->
+    <div id="kotModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50" data-event="click:closeModal">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full max-h-screen overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">Create K.O.T</h3>
+                    <button class="text-gray-400 hover:text-gray-600" data-event="click:closeModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <form class="space-y-6" data-event="submit:createKOT">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Customer Name</label>
+                            <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Enter customer name" data-mock="true" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">K.O.T Type</label>
+                            <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" data-mock="true">
+                                <option>Restaurant</option>
+                                <option>Bar</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Order Time</label>
+                            <input type="datetime-local" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" data-mock="true" />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Expected Time</label>
+                            <input type="datetime-local" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" data-mock="true" />
+                        </div>
+                    </div>
+
+                    <!-- Menu Items Selection -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Menu Items</label>
+                        <div class="border border-gray-300 rounded-md p-4 max-h-64 overflow-y-auto">
+                            <!-- @MAP: menuItems.map(item => ( -->
+                            <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0" data-mock="true">
+                                <div class="flex items-center space-x-3">
+                                    <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" data-bind="item.id" />
+                                    <div>
+                                        <p class="font-medium text-gray-900" data-bind="item.name">Fried Rice</p>
+                                        <p class="text-sm text-gray-500" data-bind="item.ingredients">Rice (350g), Carrot (50g), Chicken (75g)</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <input type="number" min="1" value="1" class="w-16 px-2 py-1 border border-gray-300 rounded text-center" data-bind="item.quantity" />
+                                    <span class="text-sm font-medium text-gray-900" data-bind="item.price">₹120</span>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center justify-between py-2 border-b border-gray-100 last:border-b-0" data-mock="true">
+                                <div class="flex items-center space-x-3">
+                                    <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" data-bind="item.id" />
+                                    <div>
+                                        <p class="font-medium text-gray-900" data-bind="item.name">Chicken Curry</p>
+                                        <p class="text-sm text-gray-500" data-bind="item.ingredients">Chicken (200g), Onion (100g), Spices (25g)</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <input type="number" min="1" value="1" class="w-16 px-2 py-1 border border-gray-300 rounded text-center" data-bind="item.quantity" />
+                                    <span class="text-sm font-medium text-gray-900" data-bind="item.price">₹180</span>
+                                </div>
+                            </div>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+
+                    <!-- Total -->
+                    <div class="border-t border-gray-200 pt-4">
+                        <div class="flex justify-between text-lg font-semibold">
+                            <span>Total Amount:</span>
+                            <span data-bind="order.totalAmount" data-mock="true">₹300</span>
+                        </div>
+                    </div>
+
+                    <div class="flex space-x-4">
+                        <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                            Create K.O.T
+                        </button>
+                        <button type="button" class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500" data-event="click:closeModal">
+                            Cancel
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: CreateKOTModal -->
+
+    <!-- Test Accounts Modal -->
+    <!-- @COMPONENT: TestAccountsModal [displays available test accounts for each role] -->
+    <div id="testAccountsModal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center p-4 z-50" data-event="click:closeModal">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-screen overflow-y-auto" onclick="event.stopPropagation()">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-semibold text-gray-900">Test Accounts</h3>
+                    <button class="text-gray-400 hover:text-gray-600" data-event="click:closeModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="p-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Admin Account -->
+                    <div class="border border-gray-200 rounded-lg p-4" data-mock="true">
+                        <div class="flex items-center mb-3">
+                            <div class="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-crown text-blue-600"></i>
+                            </div>
+                            <h4 class="font-semibold text-gray-900">Administrator</h4>
+                        </div>
+                        <div class="text-sm text-gray-600 space-y-1">
+                            <p><strong>Username:</strong> admin@restaurant.com</p>
+                            <p><strong>Password:</strong> admin123</p>
+                            <p><strong>Access:</strong> Full system access, user management, menu management</p>
+                        </div>
+                        <button class="mt-3 w-full px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700" data-event="click:loginAs" data-role="admin">
+                            Login as Admin
+                        </button>
+                    </div>
+
+                    <!-- Restaurant Cashier Account -->
+                    <div class="border border-gray-200 rounded-lg p-4" data-mock="true">
+                        <div class="flex items-center mb-3">
+                            <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-cash-register text-green-600"></i>
+                            </div>
+                            <h4 class="font-semibold text-gray-900">Restaurant Cashier</h4>
+                        </div>
+                        <div class="text-sm text-gray-600 space-y-1">
+                            <p><strong>Username:</strong> cashier@restaurant.com</p>
+                            <p><strong>Password:</strong> cashier123</p>
+                            <p><strong>Access:</strong> Create restaurant K.O.Ts, generate bills, reverse orders</p>
+                        </div>
+                        <button class="mt-3 w-full px-3 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700" data-event="click:loginAs" data-role="restaurant_cashier">
+                            Login as Cashier
+                        </button>
+                    </div>
+
+                    <!-- Store Keeper Account -->
+                    <div class="border border-gray-200 rounded-lg p-4" data-mock="true">
+                        <div class="flex items-center mb-3">
+                            <div class="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-warehouse text-purple-600"></i>
+                            </div>
+                            <h4 class="font-semibold text-gray-900">Store Keeper</h4>
+                        </div>
+                        <div class="text-sm text-gray-600 space-y-1">
+                            <p><strong>Username:</strong> storekeeper@restaurant.com</p>
+                            <p><strong>Password:</strong> store123</p>
+                            <p><strong>Access:</strong> Manage stock, process K.O.Ts, approve ingredient requests</p>
+                        </div>
+                        <button class="mt-3 w-full px-3 py-2 bg-purple-600 text-white text-sm rounded hover:bg-purple-700" data-event="click:loginAs" data-role="store_keeper">
+                            Login as Store Keeper
+                        </button>
+                    </div>
+
+                    <!-- Authorising Officer Account -->
+                    <div class="border border-gray-200 rounded-lg p-4" data-mock="true">
+                        <div class="flex items-center mb-3">
+                            <div class="w-8 h-8 bg-yellow-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-clipboard-check text-yellow-600"></i>
+                            </div>
+                            <h4 class="font-semibold text-gray-900">Authorising Officer</h4>
+                        </div>
+                        <div class="text-sm text-gray-600 space-y-1">
+                            <p><strong>Username:</strong> officer@restaurant.com</p>
+                            <p><strong>Password:</strong> officer123</p>
+                            <p><strong>Access:</strong> Monitor stock & sales, approve reversals, generate reports</p>
+                        </div>
+                        <button class="mt-3 w-full px-3 py-2 bg-yellow-600 text-white text-sm rounded hover:bg-yellow-700" data-event="click:loginAs" data-role="authorising_officer">
+                            Login as Officer
+                        </button>
+                    </div>
+
+                    <!-- Barman Account -->
+                    <div class="border border-gray-200 rounded-lg p-4" data-mock="true">
+                        <div class="flex items-center mb-3">
+                            <div class="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                                <i class="fas fa-cocktail text-red-600"></i>
+                            </div>
+                            <h4 class="font-semibold text-gray-900">Barman</h4>
+                        </div>
+                        <div class="text-sm text-gray-600 space-y-1">
+                            <p><strong>Username:</strong> barman@restaurant.com</p>
+                            <p><strong>Password:</strong> bar123</p>
+                            <p><strong>Access:</strong> Create bar K.O.Ts, generate bills, customer-wise billing</p>
+                        </div>
+                        <button class="mt-3 w-full px-3 py-2 bg-red-600 text-white text-sm rounded hover:bg-red-700" data-event="click:loginAs" data-role="barman">
+                            Login as Barman
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mt-6 p-4 bg-blue-50 rounded-lg">
+                    <div class="flex items-start">
+                        <i class="fas fa-info-circle text-blue-500 mt-0.5 mr-3"></i>
+                        <div class="text-sm text-blue-800">
+                            <p class="font-medium mb-1">Testing Instructions:</p>
+                            <ul class="list-disc list-inside space-y-1 text-blue-700">
+                                <li>Use the role selector in the sidebar to switch between different user views</li>
+                                <li>Each role has different navigation options and permissions</li>
+                                <li>K.O.T numbers are automatically generated (REST-XXX for restaurant, BAR-XXX for bar)</li>
+                                <li>Stock levels automatically update when orders are processed</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: TestAccountsModal -->
+
+    <!-- Floating Action Button -->
+    <div class="fixed bottom-6 right-6 z-40">
+        <div class="relative">
+            <!-- Main FAB -->
+            <button class="w-14 h-14 bg-primary-500 text-white rounded-full shadow-lg hover:bg-primary-600 flex items-center justify-center transition-all duration-200" data-event="click:toggleFABMenu">
+                <i class="fas fa-plus text-xl"></i>
+            </button>
+            
+            <!-- FAB Menu Items -->
+            <div id="fabMenu" class="absolute bottom-16 right-0 hidden space-y-2">
+                <button class="flex items-center justify-center w-12 h-12 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition-all duration-200" data-event="click:showCreateKOTModal" title="Create K.O.T">
+                    <i class="fas fa-receipt"></i>
+                </button>
+                <button class="flex items-center justify-center w-12 h-12 bg-blue-500 text-white rounded-full shadow-lg hover:bg-blue-600 transition-all duration-200" data-event="click:showTestAccountsModal" title="Test Accounts">
+                    <i class="fas fa-users"></i>
+                </button>
+                <button class="flex items-center justify-center w-12 h-12 bg-purple-500 text-white rounded-full shadow-lg hover:bg-purple-600 transition-all duration-200" data-event="click:showStockModal" title="Manage Stock">
+                    <i class="fas fa-boxes"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // TODO: Implement role-based access control and authentication
+        // TODO: Implement real-time order workflow management 
+        // TODO: Implement automatic stock deduction when orders are processed
+        // TODO: Implement K.O.T printing functionality
+        // TODO: Implement comprehensive reporting and analytics
+
+        (function() {
+            'use strict';
+            
+            // Basic UI interaction handlers - no business logic
+            const roleSelector = document.getElementById('roleSelector');
+            const kotModal = document.getElementById('kotModal');
+            const testAccountsModal = document.getElementById('testAccountsModal');
+            const fabMenu = document.getElementById('fabMenu');
+            
+            // Role switching simulation
+            if (roleSelector) {
+                roleSelector.addEventListener('change', function(e) {
+                    // TODO: Implement role-based view switching
+                    console.log('Switching to role:', e.target.value);
+                });
+            }
+            
+            // Modal handlers
+            function showModal(modal) {
+                if (modal) modal.classList.remove('hidden');
+            }
+            
+            function hideModal(modal) {
+                if (modal) modal.classList.add('hidden');
+            }
+            
+            // FAB menu toggle
+            let fabMenuOpen = false;
+            document.addEventListener('click', function(e) {
+                if (e.target.closest('[data-event="click:toggleFABMenu"]')) {
+                    fabMenuOpen = !fabMenuOpen;
+                    if (fabMenu) {
+                        fabMenu.classList.toggle('hidden', !fabMenuOpen);
+                    }
+                } else if (e.target.closest('[data-event="click:showCreateKOTModal"]')) {
+                    showModal(kotModal);
+                } else if (e.target.closest('[data-event="click:showTestAccountsModal"]')) {
+                    showModal(testAccountsModal);
+                } else if (e.target.closest('[data-event="click:closeModal"]')) {
+                    hideModal(kotModal);
+                    hideModal(testAccountsModal);
+                }
+            });
+            
+            // Close modals when clicking outside
+            [kotModal, testAccountsModal].forEach(modal => {
+                if (modal) {
+                    modal.addEventListener('click', function(e) {
+                        if (e.target === modal) {
+                            hideModal(modal);
+                        }
+                    });
+                }
+            });
+        })();
+    </script>
+</body>
+</html>
